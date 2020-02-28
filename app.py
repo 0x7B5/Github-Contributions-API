@@ -62,8 +62,6 @@ def getDailyCommit(username):
     for day_elem in day_elems:
         tempDate = trunc_datetime(datetime.strptime(day_elem.attrs['data-date'], '%Y-%m-%d'))
         todayDate = trunc_datetime(datetime.today())
-        print(tempDate)
-        print(datetime.today())
         if (tempDate == todayDate):
             contributions.clear()
             contributions.append({
