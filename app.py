@@ -45,9 +45,36 @@ def getWeekDay(dateToAnalyze):
     curDate = datetime.strptime(dateToAnalyze, '%Y-%m-%d').date()
     return curDate.weekday()
   
-@app.route('/DailyContributions/<username>', methods=['GET'])
-def getDailyCommit():
-    return 1
+@app.route('/todayCount/<username>', methods=['GET'])
+def getDailyCommit(username):
+    if isValidUser(username) == False:
+        return jsonify("User does not exist")
+    
+    otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(currentYear,currentYear)
+    page = requests.get(baseurl + username + otherUrl)
+    
+    soup = BeautifulSoup(page.content, 'html.parser')
+    day_elems = soup.find_all('rect')
+    contributions = [{
+        'Error': "Data Not Found",
+    }]
+    
+    for day_elem in day_elems:
+        tempDate = trunc_datetime(datetime.strptime(day_elem.attrs['data-date'], '%Y-%m-%d'))
+        todayDate = trunc_datetime(datetime.today())
+        print(tempDate)
+        print(datetime.today())
+        if (tempDate == todayDate):
+            contributions.clear()
+            contributions.append({
+                            'date': day_elem.attrs['data-date'],
+                            'color': day_elem.attrs['fill'],
+                            'count': int(day_elem.attrs['data-count']),
+                            'dayOfWeek': getWeekDay(day_elem.attrs['data-date'])
+                            })
+    
+
+    return jsonify({'today': contributions})
 
 def getUserCreationYear(username):
     """
@@ -64,7 +91,10 @@ def isValidUser(username):
     x = requests.get("https://github.com/".format(username))
     
     print(x.status_code)
-    return True 
+    return True
+    
+def trunc_datetime(someDate):
+    return someDate.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
 if __name__ == '__main__':
     app.run(debug=True)
