@@ -96,6 +96,6 @@ def trunc_datetime(someDate):
     return someDate.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
 
 
