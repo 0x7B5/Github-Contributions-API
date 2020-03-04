@@ -43,7 +43,7 @@ def getAllCommits(username):
   
 def getWeekDay(dateToAnalyze):
     curDate = datetime.strptime(dateToAnalyze, '%Y-%m-%d').date()
-    return curDate.weekday()
+    return (curDate.weekday() + 1)%7
   
 @app.route('/todayCount/<username>', methods=['GET'])
 def getDailyCommit(username):
