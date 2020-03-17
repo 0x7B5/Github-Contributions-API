@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "Contributions Speed Test:"
-curl -v -w "@curl-format.txt" http://127.0.0.1:5000/contributions/vlad-munteanu
+curl -v -w "@curl-format.txt" http://127.0.0.1:5000/contributions/$1
 echo "Today Speed Test:"
-curl -v -w "@curl-format.txt" http://127.0.0.1:5000/todayCount/vlad-munteanu
+curl -v -w "@curl-format.txt" http://127.0.0.1:5000/todayCount/$1
