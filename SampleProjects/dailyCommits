@@ -2,7 +2,7 @@
 import requests
 import json
 
-r = requests.get('https://glass-watch-269518.appspot.com/todayCount/vlad-munteanu')
+r = requests.get('https://vlad-munteanu.appspot.com/dayCount/vlad-munteanu')
 myJsonDict = r.json()['today']
 commits = myJsonDict[0]['count']
 date = myJsonDict[0]['date']

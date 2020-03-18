@@ -17,7 +17,7 @@ def getAllCommits(username, userCreationYear):
     years = []
 
     if isValidYear(userCreationYear) != True:
-        return jsonify({'Error': "Data Not Found"})
+        return jsonify({'Error': "Creation year couldn't be parsed"})
 
     for i in range(int(userCreationYear), currentYear+1, 1):
         years.append(i)
@@ -34,7 +34,7 @@ def getAllCommits(username, userCreationYear):
         for day_elem in day_elems:
             tempDate = datetime.strptime(
                 day_elem.attrs['data-date'], '%Y-%m-%d')
-            if (tempDate <= datetime.today()):
+            if (tempDate <= datetime.today().date()):
                 contributions.append({
                     'date': day_elem.attrs['data-date'],
                     'color': day_elem.attrs['fill'],
@@ -65,6 +65,14 @@ def isValidYear(s):
         return False
 
 
+def isValidDate(s):
+    try:
+        datetime.strptime(s, '%Y-%m-%d').date()
+        return True
+    except ValueError:
+        return False
+
+
 def getWeekDay(dateToAnalyze):
     curDate = datetime.strptime(dateToAnalyze, '%Y-%m-%d').date()
     return (curDate.weekday()+1) % 7
@@ -75,8 +83,8 @@ def invalid_route(e):
     return jsonify({'Error': "Invalid Route"})
 
 
-@app.route('/todayCount/<username>', methods=['GET'])
-def getDailyCommit(username):
+@app.route('/weeklyCount/<username>', methods=['GET'])
+def getWeeklyCommits(username):
     otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
         currentYear, currentYear)
     page = requests.get(baseurl + username + otherUrl)
@@ -94,6 +102,69 @@ def getDailyCommit(username):
         todayDate = datetime.today().date()
 
         if (tempDate == todayDate):
+            contributions.clear()
+            contributions.append({
+                'date': day_elem.attrs['data-date'],
+                'color': day_elem.attrs['fill'],
+                'count': int(day_elem.attrs['data-count']),
+                'dayOfWeek': getWeekDay(day_elem.attrs['data-date'])
+            })
+
+    return jsonify({'today': contributions})
+
+
+@app.route('/monthlyCount/<username>', methods=['GET'])
+def getMontlyCommits(username):
+    otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
+        currentYear, currentYear)
+    page = requests.get(baseurl + username + otherUrl)
+
+    soup = BeautifulSoup(page.content, 'html.parser')
+    day_elems = soup.find_all('rect')
+    contributions = []
+
+    if day_elems == []:
+        return jsonify({'Error': "Data Not Found"})
+
+    for day_elem in day_elems:
+        tempDate = datetime.strptime(
+            day_elem.attrs['data-date'], '%Y-%m-%d').date()
+        todayDate = datetime.today().date()
+
+        if (tempDate == todayDate):
+            contributions.clear()
+            contributions.append({
+                'date': day_elem.attrs['data-date'],
+                'color': day_elem.attrs['fill'],
+                'count': int(day_elem.attrs['data-count']),
+                'dayOfWeek': getWeekDay(day_elem.attrs['data-date'])
+            })
+
+    return jsonify({'today': contributions})
+
+
+@app.route('/dayCount/<username>', defaults={'todaysDate': datetime.today().date()}, methods=['GET'])
+@app.route('/dayCount/<username>/<todaysDate>', methods=['GET'])
+def getDailyCommit(username, todaysDate):
+    otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
+        currentYear, currentYear)
+    page = requests.get(baseurl + username + otherUrl)
+
+    if isValidDate(todaysDate) != True:
+        return jsonify({'Error': "Date couldn't be parsed"})
+
+    soup = BeautifulSoup(page.content, 'html.parser')
+    day_elems = soup.find_all('rect')
+    contributions = []
+
+    if day_elems == []:
+        return jsonify({'Error': "Data Not Found"})
+
+    for day_elem in day_elems:
+        tempDate = datetime.strptime(
+            day_elem.attrs['data-date'], '%Y-%m-%d').date()
+
+        if (tempDate == datetime.strptime(todaysDate, '%Y-%m-%d').date()):
             contributions.clear()
             contributions.append({
                 'date': day_elem.attrs['data-date'],
