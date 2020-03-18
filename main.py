@@ -7,14 +7,24 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, static_url_path="")
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 currentYear = datetime.today().year
 baseurl = "https://github.com/"
 
 
-@app.route('/contributions/<username>/<userCreationYear>', methods=['GET'])
-def getAllCommits(username, userCreationYear):
+@app.route('/contributions/<username>/<userCreationYear>', defaults={'todaysDate': None}, methods=['GET'])
+@app.route('/contributions/<username>/<userCreationYear>/<todaysDate>', methods=['GET'])
+def getAllCommits(username, userCreationYear, todaysDate):
     contributions = []
     years = []
+
+    if todaysDate == None:
+        print("NONE NONE")
+        todaysDate = datetime.today()
+    else:
+        if isValidDate(todaysDate) != True:
+            return jsonify({'Error': "Date couldn't be parsed"})
+        todaysDate = datetime.strptime(todaysDate, '%Y-%m-%d')
 
     if isValidYear(userCreationYear) != True:
         return jsonify({'Error': "Creation year couldn't be parsed"})
@@ -34,7 +44,7 @@ def getAllCommits(username, userCreationYear):
         for day_elem in day_elems:
             tempDate = datetime.strptime(
                 day_elem.attrs['data-date'], '%Y-%m-%d')
-            if (tempDate <= datetime.today().date()):
+            if (tempDate <= todaysDate):
                 contributions.append({
                     'date': day_elem.attrs['data-date'],
                     'color': day_elem.attrs['fill'],
@@ -70,6 +80,8 @@ def isValidDate(s):
         datetime.strptime(s, '%Y-%m-%d').date()
         return True
     except ValueError:
+        return False
+    except TypeError:
         return False
 
 
@@ -129,6 +141,8 @@ def getMontlyCommits(username):
             day_elem.attrs['data-date'], '%Y-%m-%d').date()
         todayDate = datetime.today().date()
 
+        print(tempDate)
+
         if (tempDate == todayDate):
             contributions.clear()
             contributions.append({
@@ -141,7 +155,7 @@ def getMontlyCommits(username):
     return jsonify({'today': contributions})
 
 
-@app.route('/dayCount/<username>', defaults={'todaysDate': datetime.today().date()}, methods=['GET'])
+@app.route('/dayCount/<username>', defaults={'todaysDate': str(datetime.today().date())}, methods=['GET'])
 @app.route('/dayCount/<username>/<todaysDate>', methods=['GET'])
 def getDailyCommit(username, todaysDate):
     otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
@@ -172,11 +186,6 @@ def getDailyCommit(username, todaysDate):
             })
 
     return jsonify({'today': contributions})
-
-
-@app.route('/test', methods=['GET'])
-def testing():
-    return jsonify({'today': datetime.today()})
 
 
 if __name__ == '__main__':
