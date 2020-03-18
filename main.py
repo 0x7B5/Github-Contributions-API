@@ -61,8 +61,12 @@ def fillUrls(username, yearsToGet):
     urls = []
 
     for year in yearsToGet:
-        otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(year, year)
-        urls.append(baseurl + "/" + username + otherUrl)
+        if (year != currentYear):
+            otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
+                year, year)
+            urls.append(baseurl + "/" + username + otherUrl)
+        else:
+            urls.append(baseurl + "/" + username)
 
     return urls
 
