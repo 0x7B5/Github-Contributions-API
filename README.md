@@ -6,18 +6,18 @@ https://vlad-munteanu.appspot.com
 
 ## Usage
 
-'GET /contributions/<username>/<userCreationYear>/<todaysDate>'
+'GET /contributions/\<username\>/\<userCreationYear\>/\<todaysDate\>'
 Returns json data of all contribution history
 (The user creation year is sent to the api as a parameter here instead of automatically being found because of GitHub's api limit.)
 (The date is sent to the api here to account for potential timezone inconsistencies.)
 
-'GET /dayCount/<username>/<date>'
+'GET /dayCount/\<username\>/\<date\>'
 Returns the data for a given day's contributions. Returns the data for today's contributions if the optional date parameter is not given.
 
-'GET /weeklyCount/<username>/<todaysDate>'
+'GET /weeklyCount/\<username\>/\<todaysDate\>'
 Returns the data for current week's contributions
 
-'GET /monthlyCount/<username>/<todaysDate>'
+'GET /monthlyCount/\<username\>/\<todaysDate\>'
 Returns the data for the last 30 days of contributions
 
 ## Authors
