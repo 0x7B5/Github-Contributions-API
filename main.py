@@ -95,11 +95,20 @@ def invalid_route(e):
     return jsonify({'Error': "Invalid Route"})
 
 
-@app.route('/weeklyCount/<username>', methods=['GET'])
-def getWeeklyCommits(username):
-    otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
-        currentYear, currentYear)
-    page = requests.get(baseurl + username + otherUrl)
+@app.route('/weeklyCount/<username>', defaults={'todaysDate': None}, methods=['GET'])
+@app.route('/weeklyCount/<username>/<todaysDate>', methods=['GET'])
+def getWeeklyCommits(username, todaysDate):
+    if todaysDate == None:
+        print("NONE NONE")
+        todaysDate = datetime.today()
+    else:
+        if isValidDate(todaysDate) != True:
+            return jsonify({'Error': "Date couldn't be parsed"})
+        todaysDate = datetime.strptime(todaysDate, '%Y-%m-%d')
+
+    weekAgoDate = (todaysDate - timedelta(days=7))
+
+    page = requests.get(baseurl + username)
 
     soup = BeautifulSoup(page.content, 'html.parser')
     day_elems = soup.find_all('rect')
@@ -110,11 +119,10 @@ def getWeeklyCommits(username):
 
     for day_elem in day_elems:
         tempDate = datetime.strptime(
-            day_elem.attrs['data-date'], '%Y-%m-%d').date()
-        todayDate = datetime.today().date()
+            day_elem.attrs['data-date'], '%Y-%m-%d')
 
-        if (tempDate == todayDate):
-            contributions.clear()
+        if (tempDate >= weekAgoDate and tempDate <= todaysDate):
+            print(tempDate)
             contributions.append({
                 'date': day_elem.attrs['data-date'],
                 'color': day_elem.attrs['fill'],
@@ -122,7 +130,14 @@ def getWeeklyCommits(username):
                 'dayOfWeek': getWeekDay(day_elem.attrs['data-date'])
             })
 
-    return jsonify({'today': contributions})
+    weeklyArray = [None] * 6
+    for value in reversed(contributions):
+        weeklyArray.insert(value["dayOfWeek"], value)
+        if(value["dayOfWeek"] == 0):
+            break
+
+    # Really don't know why nulls are still in list so we have to do this hacky shit
+    return jsonify({'today': [i for i in weeklyArray if i]})
 
 
 @app.route('/monthlyCount/<username>', defaults={'todaysDate': None}, methods=['GET'])
