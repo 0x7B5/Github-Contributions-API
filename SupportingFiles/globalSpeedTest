@@ -1,5 +1,5 @@
 #!/bin/bash
 echo "Contributions Speed Test:"
-curl -v -w "@curl-format.txt" https://vlad-munteanu.appspot.com/contributions/$1
+curl -v -w "@curl-format.txt" https://vlad-munteanu.appspot.com/contributions/$1/$2
 echo "Today Speed Test:"
-curl -v -w "@curl-format.txt" https://vlad-munteanu.appspot.com/todayCount/$1
+curl -v -w "@curl-format.txt" https://vlad-munteanu.appspot.com/dayCount/$1
