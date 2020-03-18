@@ -6,17 +6,18 @@ https://vlad-munteanu.appspot.com
 
 ## Usage
 
-'GET /contributions/<username>/<userCreationYear>'
+'GET /contributions/<username>/<userCreationYear>/<todaysDate>'
 Returns json data of all contribution history
 (The user creation year is sent to the api as a parameter here instead of automatically being found because of GitHub's api limit.)
+(The date is sent to the api here to account for potential timezone inconsistencies.)
 
 'GET /dayCount/<username>/<date>'
 Returns the data for a given day's contributions. Returns the data for today's contributions if the optional date parameter is not given.
 
-'GET /weeklyCount/<username>/'
+'GET /weeklyCount/<username>/<todaysDate>'
 Returns the data for current week's contributions
 
-'GET /monthlyCount/<username>/'
+'GET /monthlyCount/<username>/<todaysDate>'
 Returns the data for the last 30 days of contributions
 
 ## Authors
@@ -26,14 +27,6 @@ Returns the data for the last 30 days of contributions
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
-
-## TO_DO
-
-- [ ] Add Montly contributions
-- [ ] FIX TODAY COUNT WHY IS THIS NOT WORKING
-- [ ] Contributions fetches tomorrows date too
-- [ ] Add Weekly contributions
-- [ ] Completely remove dependence on GitHub's API (since they have a limit on unauthorized api requests)
 
 ## Questions
 
