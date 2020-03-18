@@ -11,16 +11,15 @@ currentYear = datetime.today().year
 baseurl = "https://github.com/"
 
 
-@app.route('/contributions/<username>', methods=['GET'])
-def getAllCommits(username):
-    if isValidUser(username) == False:
-        return jsonify("User does not exist")
-
+@app.route('/contributions/<username>/<userCreationYear>', methods=['GET'])
+def getAllCommits(username, userCreationYear):
     contributions = []
-    userCreationYear = getUserCreationYear(username)
     years = []
 
-    for i in range(userCreationYear, currentYear+1, 1):
+    if isValidYear(userCreationYear) != True:
+        return jsonify({'Error': "Data Not Found"})
+
+    for i in range(int(userCreationYear), currentYear+1, 1):
         years.append(i)
 
     urls = fillUrls(username, years)
@@ -29,6 +28,8 @@ def getAllCommits(username):
     for i in results:
         soup = BeautifulSoup(i.content, 'html.parser')
         day_elems = soup.find_all('rect')
+        if day_elems == []:
+            return jsonify({'Error': "Data Not Found"})
 
         for day_elem in day_elems:
             tempDate = datetime.strptime(
@@ -56,25 +57,36 @@ def fillUrls(username, yearsToGet):
     return urls
 
 
+def isValidYear(s):
+    try:
+        int(s)
+        return True
+    except ValueError:
+        return False
+
+
 def getWeekDay(dateToAnalyze):
     curDate = datetime.strptime(dateToAnalyze, '%Y-%m-%d').date()
     return (curDate.weekday()+1) % 7
 
 
+@app.errorhandler(404)
+def invalid_route(e):
+    return jsonify({'Error': "Invalid Route"})
+
+
 @app.route('/todayCount/<username>', methods=['GET'])
 def getDailyCommit(username):
-    if isValidUser(username) == False:
-        return jsonify("User does not exist")
-
     otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
         currentYear, currentYear)
     page = requests.get(baseurl + username + otherUrl)
 
     soup = BeautifulSoup(page.content, 'html.parser')
     day_elems = soup.find_all('rect')
-    contributions = [{
-        'Error': "Data Not Found",
-    }]
+    contributions = []
+
+    if day_elems == []:
+        return jsonify({'Error': "Data Not Found"})
 
     for day_elem in day_elems:
         tempDate = datetime.strptime(
@@ -91,29 +103,6 @@ def getDailyCommit(username):
             })
 
     return jsonify({'today': contributions})
-
-
-def getUserCreationYear(username):
-    """
-    So theres an api limit on this so we need to manually parse
-    """
-    r = requests.get("https://api.github.com/users/{}".format(username))
-    data = r.json()
-    return int(data['created_at'].split("-")[0])
-
-
-def isValidUser(username):
- # There's an API limit that I'm hitting for some reason
- # SO essentially, we need to manually parse the github site to see if they are
- # a valid user or not because the api is being weird
-    x = requests.get("https://github.com/".format(username))
-
-    print(x.status_code)
-    return True
-
-
-def trunc_datetime(someDate):
-    return someDate.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
 
 if __name__ == '__main__':
