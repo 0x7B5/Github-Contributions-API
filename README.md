@@ -2,7 +2,7 @@
 
 GitHub doesn't have an API for contribution data so I made my own.
 
-https://glass-watch-269518.appspot.com/
+https://vlad-munteanu.appspot.com
 
 ## Usage
 
