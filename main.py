@@ -3,7 +3,7 @@ import grequests
 import requests
 
 from flask import Flask, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 
 app = Flask(__name__, static_url_path="")
@@ -125,8 +125,19 @@ def getWeeklyCommits(username):
     return jsonify({'today': contributions})
 
 
-@app.route('/monthlyCount/<username>', methods=['GET'])
-def getMontlyCommits(username):
+@app.route('/monthlyCount/<username>', defaults={'todaysDate': None}, methods=['GET'])
+@app.route('/monthlyCount/<username>/<todaysDate>', methods=['GET'])
+def getMontlyCommits(username, todaysDate):
+    if todaysDate == None:
+        print("NONE NONE")
+        todaysDate = datetime.today()
+    else:
+        if isValidDate(todaysDate) != True:
+            return jsonify({'Error': "Date couldn't be parsed"})
+        todaysDate = datetime.strptime(todaysDate, '%Y-%m-%d')
+
+    monthAgoDate = (todaysDate - timedelta(days=30))
+    print(type(monthAgoDate))
     page = requests.get(baseurl + username)
 
     soup = BeautifulSoup(page.content, 'html.parser')
@@ -138,13 +149,10 @@ def getMontlyCommits(username):
 
     for day_elem in day_elems:
         tempDate = datetime.strptime(
-            day_elem.attrs['data-date'], '%Y-%m-%d').date()
-        todayDate = datetime.today().date()
+            day_elem.attrs['data-date'], '%Y-%m-%d')
 
         print(tempDate)
-
-        if (tempDate == todayDate):
-            contributions.clear()
+        if (tempDate >= monthAgoDate and tempDate <= todaysDate):
             contributions.append({
                 'date': day_elem.attrs['data-date'],
                 'color': day_elem.attrs['fill'],
