@@ -115,9 +115,7 @@ def getWeeklyCommits(username):
 
 @app.route('/monthlyCount/<username>', methods=['GET'])
 def getMontlyCommits(username):
-    otherUrl = "?tab=overview&from={}-01-01&to={}-12-31".format(
-        currentYear, currentYear)
-    page = requests.get(baseurl + username + otherUrl)
+    page = requests.get(baseurl + username)
 
     soup = BeautifulSoup(page.content, 'html.parser')
     day_elems = soup.find_all('rect')
@@ -174,6 +172,11 @@ def getDailyCommit(username, todaysDate):
             })
 
     return jsonify({'today': contributions})
+
+
+@app.route('/test', methods=['GET'])
+def testing():
+    return jsonify({'today': datetime.today()})
 
 
 if __name__ == '__main__':
