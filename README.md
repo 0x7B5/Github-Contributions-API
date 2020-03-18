@@ -6,7 +6,6 @@ https://glass-watch-269518.appspot.com/
 
 ## Usage
 
-**Definition**
 'GET /contributions/<username>'
 Returns json data of all contribution history
 
@@ -20,6 +19,11 @@ Returns the count of contributions for today
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details
+
+## TO_DO
+
+- [ ] Fix valid username check
+- [ ] Completely remove dependence on GitHub's API (since they have a limit on unauthorized api requests)
 
 ## Questions
 
