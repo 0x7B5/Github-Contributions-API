@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import requests
 import json
+from datetime import datetime
 
-r = requests.get('https://vlad-munteanu.appspot.com/dayCount/vlad-munteanu')
+r = requests.get(
+    'https://vlad-munteanu.appspot.com/dayCount/vlad-munteanu/' + str(datetime.today().date()))
 myJsonDict = r.json()['today']
 commits = myJsonDict[0]['count']
 date = myJsonDict[0]['date']
@@ -13,6 +15,3 @@ print("Commits:", myJsonDict[0]['count'])
 if commits == 0:
     print("")
     print("Go code.")
-    
-
-
