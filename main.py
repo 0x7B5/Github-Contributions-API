@@ -229,7 +229,6 @@ def getAppleWatchInfo(username, userCreationYear, todaysDate):
         years.append(i)
 
     urls = fillUrls(username, years)
-    print(urls)
     results = grequests.map((grequests.get(u) for u in urls), size=len(years))
     todayCount = 0
     yesterdayCount = 0
@@ -264,7 +263,8 @@ def getAppleWatchInfo(username, userCreationYear, todaysDate):
         'username': username,
         'commitsToday': todayCount,
         'commitsYesterday': yesterdayCount,
-        'currentStreak': currentStreak
+        'currentStreak': currentStreak,
+        'creationYear': userCreationYear
     }
 
     return jsonify({'data': dataToReturn})
