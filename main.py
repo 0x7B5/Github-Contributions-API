@@ -215,5 +215,82 @@ def getDailyCommit(username, todaysDate):
     return jsonify({'today': contributions})
 
 
+@app.route('/aw/<username>/<userCreationYear>/<todaysDate>', methods=['GET'])
+def getAppleWatchInfo(username, userCreationYear, todaysDate):
+    contributions = []
+    years = []
+    if isValidDate(todaysDate) != True:
+        return jsonify({'Error': "Date couldn't be parsed"})
+
+    if isValidYear(userCreationYear) != True:
+        return jsonify({'Error': "Creation year couldn't be parsed"})
+
+    for i in range(int(userCreationYear), currentYear+1, 1):
+        years.append(i)
+
+    urls = fillUrls(username, years)
+    print(urls)
+    results = grequests.map((grequests.get(u) for u in urls), size=len(years))
+    todayCount = 0
+    yesterdayCount = 0
+
+    todaysDate = datetime.strptime(todaysDate, '%Y-%m-%d').date()
+
+    for i in results:
+        soup = BeautifulSoup(i.content, 'html.parser')
+        day_elems = soup.find_all('rect')
+        if day_elems == []:
+            return jsonify({'Error': "Data Not Found"})
+
+        for day_elem in day_elems:
+            tempDate = datetime.strptime(
+                day_elem.attrs['data-date'], '%Y-%m-%d').date()
+
+            if (tempDate <= todaysDate):
+                contributions.append({
+                    'date': day_elem.attrs['data-date'],
+                    'count': int(day_elem.attrs['data-count']),
+                })
+
+                if (tempDate == todaysDate):
+                    print("Woah")
+                    todayCount = int(day_elem.attrs['data-count'])
+                    yesterdayCount = contributions[-2]['count']
+            else:
+                break
+    currentStreak = calculateStreak(contributions, todaysDate, todayCount)
+
+    dataToReturn = {
+        'username': username,
+        'commitsToday': todayCount,
+        'commitsYesterday': yesterdayCount,
+        'currentStreak': currentStreak
+    }
+
+    return jsonify({'data': dataToReturn})
+
+
+def calculateStreak(contributions, todaysDate, todayCount):
+    if todayCount == 0:
+        todaysDate = todaysDate - timedelta(days=1)
+
+    counter = 0
+    countingYet = False
+
+    for i in reversed(contributions):
+        if countingYet:
+            if i['count'] > 0:
+                counter += 1
+            else:
+                break
+
+        if i['date'] == str(todaysDate):
+            countingYet = True
+            if i['count'] > 0:
+                counter += 1
+
+    return counter
+
+
 if __name__ == '__main__':
     app.run(debug=False)
